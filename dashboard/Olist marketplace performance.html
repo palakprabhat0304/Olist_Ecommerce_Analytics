@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Olist Marketplace Performance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e1a2b;--panel:#13233a;--line:#243752;--ink:#e6edf5;--mute:#8fa3bb;--accent:#3cb8a9;--warn:#e0875a;--bar:#2c4666;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
+:root[data-theme="light"]{--bg:#f3f5f8;--panel:#ffffff;--line:#d6dde7;--ink:#14233a;--mute:#5d6f87;--accent:#13806f;--warn:#b9582b;--bar:#c3cfdd;color-scheme:light}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 48px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;padding:28px 0 16px;border-bottom:1px solid var(--line)}
+h1{font:500 24px/1.2 "IBM Plex Serif",Georgia,serif;margin:0}
+.sub{color:var(--mute);margin:4px 0 0;font-size:13px}
+.tools{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tab,.theme{background:none;border:1px solid var(--line);color:var(--mute);padding:6px 14px;border-radius:3px;font:inherit;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#06211d;font-weight:600}
+.tab:focus-visible,.theme:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);border-bottom:1px solid var(--line)}
+.kpi{padding:18px 16px 16px 0;border-right:1px solid var(--line);padding-left:16px}
+.kpi:first-child{padding-left:0}.kpi:last-child{border-right:0}
+.kpi b{display:block;font:500 26px/1.1 "IBM Plex Serif",Georgia,serif;margin-bottom:4px}
+.kpi span{color:var(--mute);font-size:12.5px}
+.kpi.w b{color:var(--warn)}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:28px 32px;padding-top:28px}
+.s{grid-column:span 6;min-width:0}.s.full{grid-column:span 12}.s.t{grid-column:span 4}.s.e{grid-column:span 8}
+h2{font-size:15px;font-weight:600;margin:0 0 2px}
+.note{color:var(--mute);font-size:12.5px;margin:0 0 14px;max-width:62ch}
+.row{display:grid;grid-template-columns:150px 1fr 64px;gap:10px;align-items:center;padding:4px 0}
+.row .l{color:var(--mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .t2{height:14px;background:transparent;position:relative}
+.row .f{height:100%;background:var(--bar);min-width:1px}
+.row .f.a{background:var(--accent)}.row .f.w{background:var(--warn)}
+.row .v{text-align:right;font-variant-numeric:tabular-nums}
+.cols{display:flex;align-items:flex-end;gap:10px;height:170px;border-bottom:1px solid var(--line);padding-top:20px}
+.col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;font-size:11.5px;color:var(--mute)}
+.col i{display:block;width:100%;background:var(--bar);margin-top:4px}
+.col.a i{background:var(--accent)}
+.lab{display:flex;gap:10px;margin-top:6px;font-size:12px;color:var(--mute)}.lab span{flex:1;text-align:center}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th{font-weight:500;color:var(--mute);text-align:right;padding:6px 8px;border-bottom:1px solid var(--line);font-size:12.5px}
+td{text-align:right;padding:7px 8px;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left;padding-left:0}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.pair div b{display:block;font:500 30px/1.1 "IBM Plex Serif",Georgia,serif}
+.pair div span{color:var(--mute);font-size:12.5px}
+.hi{color:var(--warn)}
+footer{margin-top:36px;padding-top:14px;border-top:1px solid var(--line);color:var(--mute);font-size:12px;max-width:100ch}
+[hidden]{display:none!important}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.kpi{border-right:0;border-bottom:1px solid var(--line);padding-left:0}.s,.s.t,.s.e{grid-column:span 12}.row{grid-template-columns:110px 1fr 56px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+ <div>
+  <h1>Olist marketplace performance</h1>
+  <p class="sub">Brazilian e-commerce orders, 2016–2018. Source: PostgreSQL analysis of the public Olist dataset. Values in BRL.</p>
+ </div>
+ <div class="tools" role="tablist">
+  <button class="tab" role="tab" data-t="ov" aria-selected="true">Overview</button>
+  <button class="tab" role="tab" data-t="dl" aria-selected="false">Delivery</button>
+  <button class="tab" role="tab" data-t="cp" aria-selected="false">Customers and payments</button>
+  <button class="theme" id="th" aria-label="Switch colour theme">Light</button>
+ </div>
+</header>
+
+<div class="kpis">
+ <div class="kpi"><b>99,441</b><span>Orders</span></div>
+ <div class="kpi"><b>R$16.01M</b><span>Total payment value</span></div>
+ <div class="kpi"><b>R$160.99</b><span>Average order value</span></div>
+ <div class="kpi"><b>4.09</b><span>Average review score</span></div>
+ <div class="kpi w"><b>8.11%</b><span>Delivered orders late</span></div>
+ <div class="kpi w"><b>3.12%</b><span>Customers who reordered</span></div>
+</div>
+
+<main>
+<section id="ov" class="grid">
+ <div class="s e">
+  <h2>Longer delays push the one-star share from 14% to 69%</h2>
+  <p class="note">Share of one-star reviews by how many days past the estimated date the order arrived. On-time orders sit at 6.6%.</p>
+  <div id="c-delay"></div>
+ </div>
+ <div class="s t">
+  <h2>Late versus on-time orders</h2>
+  <p class="note">Average review score, delivered orders with valid dates.</p>
+  <div class="pair" style="margin-bottom:18px"><div><b class="hi">2.57</b><span>Late, 7,700 reviews</span></div><div><b>4.29</b><span>On time or early, 88,653 reviews</span></div></div>
+  <div class="pair"><div><b class="hi">46.2%</b><span>One-star, late</span></div><div><b>6.6%</b><span>One-star, on time</span></div></div>
+ </div>
+ <div class="s">
+  <h2>Review score distribution</h2>
+  <p class="note">99,224 reviews. 77% are four or five stars; 14.7% are one or two.</p>
+  <div id="c-rev"></div>
+ </div>
+ <div class="s">
+  <h2>What one-star comments mention</h2>
+  <p class="note">8,745 one-star reviews with a comment, grouped by keyword match. Categories are indicative, not hand-checked.</p>
+  <div id="c-comp"></div>
+ </div>
+</section>
+
+<section id="dl" class="grid" hidden>
+ <div class="s">
+  <h2>Late delivery rate by customer state</h2>
+  <p class="note">States with at least 100 delivered orders. Highest eight and lowest three.</p>
+  <div id="c-state"></div>
+ </div>
+ <div class="s">
+  <h2>Interstate orders arrive late more often</h2>
+  <p class="note">Seller state compared with customer state.</p>
+  <div id="c-inter"></div>
+  <p class="note" style="margin-top:18px">Interstate orders are 53% more likely to be late: a 3.17 point gap.</p>
+ </div>
+ <div class="s full">
+  <h2>Seller-to-customer routes with the highest late rate</h2>
+  <p class="note">Routes with at least 50 delivered orders. São Paulo to Rio de Janeiro carries the most volume and the most late orders in absolute terms.</p>
+  <div style="overflow-x:auto"><table id="t-route"><thead><tr><th>Route (seller to customer)</th><th>Orders</th><th>Late orders</th><th>Late rate</th></tr></thead><tbody></tbody></table></div>
+ </div>
+ <div class="s full">
+  <h2>Rating by delay length</h2>
+  <div style="overflow-x:auto"><table id="t-delay"><thead><tr><th>Days past estimate</th><th>Reviews</th><th>Average score</th><th>One-star reviews</th><th>One-star share</th></tr></thead><tbody></tbody></table></div>
+ </div>
+</section>
+
+<section id="cp" class="grid" hidden>
+ <div class="s">
+  <h2>Credit cards dominate payments</h2>
+  <p class="note">Share of payment records against share of payment value.</p>
+  <div id="c-pay"></div>
+ </div>
+ <div class="s">
+  <h2>Orders by number of instalments</h2>
+  <p class="note">Orders with up to 10 instalments (about 98% of orders). Half of all orders are paid in one go.</p>
+  <div class="cols" id="c-inst"></div><div class="lab" id="l-inst"></div>
+ </div>
+ <div class="s">
+  <h2>Higher payments tend to use more instalments</h2>
+  <p class="note">Average payment record value by instalment count, in R$. An association only; the data does not show why.</p>
+  <div id="c-instv"></div>
+ </div>
+ <div class="s">
+  <h2>Repeat purchasing is rare</h2>
+  <p class="note">Customers counted by unique customer ID, not by the per-order customer ID.</p>
+  <div class="pair" style="margin-bottom:16px"><div><b>96,096</b><span>Unique customers</span></div><div><b class="hi">2,997</b><span>Placed more than one order</span></div></div>
+ </div>
+</section>
+</main>
+
+<footer>
+ Findings are descriptive and show association, not cause. Delivery figures use delivered orders with both dates present (96,470). The state and route tables are built from a slightly different join and cover 97,811 orders, so totals will not match exactly. Payment records (103,886) outnumber orders (99,440) because some orders are paid in several parts.
+</footer>
+</div>
+
+<script>
+var F=function(n){return n.toLocaleString("en-US")};
+function bars(id,rows,o){o=o||{};var max=o.max||Math.max.apply(null,rows.map(function(r){return r.v}));
+ document.getElementById(id).innerHTML=rows.map(function(r){
+  return '<div class="row"><div class="l" title="'+r.l+'">'+r.l+'</div><div class="t2"><div class="f '+(r.c||"")+'" style="width:'+(r.v/max*100)+'%"></div></div><div class="v">'+(o.fmt?o.fmt(r.v):r.v)+'</div></div>'}).join("")}
+var pct=function(v){return v.toFixed(1)+"%"};
+
+bars("c-delay",[
+ {l:"On time or early",v:6.6},{l:"1–3 days late",v:13.81,c:"w"},{l:"4–7 days late",v:53.01,c:"w"},
+ {l:"8–14 days late",v:67.92,c:"w"},{l:"Over 14 days late",v:69.48,c:"w"}],{max:80,fmt:pct});
+bars("c-rev",[{l:"5 stars",v:57328,c:"a"},{l:"4 stars",v:19142},{l:"3 stars",v:8179},{l:"2 stars",v:3151},{l:"1 star",v:11424,c:"w"}],{fmt:F});
+bars("c-comp",[{l:"Delivery",v:56.28,c:"w"},{l:"General dissatisfaction",v:32.37},{l:"Product mismatch",v:2.95},{l:"Quality or damage",v:2.9},{l:"Missing items",v:2.71},{l:"Support and returns",v:1.85},{l:"Invoice",v:.93}],{max:60,fmt:function(v){return v.toFixed(1)+"%"}});
+bars("c-state",[
+ {l:"Alagoas (AL)",v:23.93,c:"w"},{l:"Maranhão (MA)",v:19.67,c:"w"},{l:"Piauí (PI)",v:15.97,c:"w"},{l:"Ceará (CE)",v:15.32,c:"w"},
+ {l:"Sergipe (SE)",v:15.22,c:"w"},{l:"Bahia (BA)",v:14.04,c:"w"},{l:"Rio de Janeiro (RJ)",v:13.47,c:"w"},{l:"Tocantins (TO)",v:12.77,c:"w"},
+ {l:"São Paulo (SP)",v:5.89,c:"a"},{l:"Paraná (PR)",v:5.0,c:"a"},{l:"Rondônia (RO)",v:2.88,c:"a"}],{max:26,fmt:function(v){return v.toFixed(2)+"%"}});
+bars("c-inter",[{l:"Interstate, 62,630 orders",v:9.16,c:"w"},{l:"Same state, 35,181 orders",v:5.99,c:"a"}],{max:12,fmt:function(v){return v.toFixed(2)+"%"}});
+bars("c-pay",[
+ {l:"Credit card, records",v:73.92,c:"a"},{l:"Credit card, value",v:78.35,c:"a"},
+ {l:"Boleto, records",v:19.04},{l:"Boleto, value",v:17.92},
+ {l:"Voucher, records",v:5.56},{l:"Voucher, value",v:2.37},
+ {l:"Debit card, records",v:1.47},{l:"Debit card, value",v:1.36}],{max:85,fmt:function(v){return v.toFixed(1)+"%"}});
+
+var inst=[[1,49060,112.42],[2,12389,127.23],[3,10443,142.54],[4,7088,163.98],[5,5234,183.47],[6,3916,209.85],[7,1623,187.67],[8,4253,307.74],[9,644,203.44],[10,5315,415.09]];
+var im=49060;
+document.getElementById("c-inst").innerHTML=inst.map(function(r,i){return '<div class="col'+(i==0?" a":"")+'">'+F(r[1])+'<i style="height:'+(r[1]/im*120)+'px"></i></div>'}).join("");
+document.getElementById("l-inst").innerHTML=inst.map(function(r){return "<span>"+r[0]+"x</span>"}).join("");
+bars("c-instv",inst.map(function(r){return {l:r[0]+(r[0]==1?" instalment":" instalments"),v:r[2]}}),{fmt:function(v){return "R$"+v.toFixed(0)}});
+
+var routes=[["São Paulo → Alagoas",256,67,26.17],["Maranhão → São Paulo",124,31,25.0],["Rio de Janeiro → Ceará",54,12,22.22],["São Paulo → Maranhão",493,105,21.3],["São Paulo → Piauí",329,60,18.24],["Paraná → Bahia",144,24,16.67],["São Paulo → Sergipe",208,34,16.35],["São Paulo → Rio de Janeiro",8188,1264,15.44],["São Paulo → Ceará",970,148,15.26],["São Paulo → Bahia",2313,345,14.92]];
+document.querySelector("#t-route tbody").innerHTML=routes.map(function(r){return "<tr><td>"+r[0]+"</td><td>"+F(r[1])+"</td><td>"+F(r[2])+"</td><td"+(r[3]>20?' class="hi"':"")+">"+r[3].toFixed(2)+"%</td></tr>"}).join("");
+var dl=[["1–3 days",2651,3.77,366,13.81],["4–7 days",1777,2.32,942,53.01],["8–14 days",1758,1.75,1194,67.92],["Over 14 days",1514,1.71,1052,69.48]];
+document.querySelector("#t-delay tbody").innerHTML=dl.map(function(r){return "<tr><td>"+r[0]+"</td><td>"+F(r[1])+"</td><td>"+r[2].toFixed(2)+"</td><td>"+F(r[3])+"</td><td>"+r[4].toFixed(2)+"%</td></tr>"}).join("");
+
+var tabs=document.querySelectorAll(".tab");
+function show(id){tabs.forEach(function(t){t.setAttribute("aria-selected",t.dataset.t===id)});["ov","dl","cp"].forEach(function(s){document.getElementById(s).hidden=(s!==id)})}
+tabs.forEach(function(t){t.addEventListener("click",function(){show(t.dataset.t)})});
+var th=document.getElementById("th"),root=document.documentElement;
+try{if(localStorage.getItem("olist-theme")==="light"){root.dataset.theme="light";th.textContent="Dark"}}catch(e){}
+th.addEventListener("click",function(){var l=root.dataset.theme!=="light";root.dataset.theme=l?"light":"dark";th.textContent=l?"Dark":"Light";try{localStorage.setItem("olist-theme",l?"light":"dark")}catch(e){}});
+</script>
+</body>
+</html>
